@@ -11,4 +11,5 @@ def lambda_handler(event, context):
     model_arn = dr_client.import_model(Type='REINFORCEMENT_LEARNING',
                                        Name=model_name,
                                        ModelArtifactsS3Path='s3://{}/{}'.format(bucket, model_name),
-                                       RoleArn=os.environ['ImportRoleArn'])
+                                       RoleArn=os.environ['importRoleArn'])
+    print('A DeepRacer model {} was imported successfully'.format(model_arn))

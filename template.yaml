@@ -16,12 +16,50 @@ Parameters:
     Description: The S3 bucket where the models trained locally are uploaded
 
 Resources:
+  S3ModelImportRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - deepracer.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: deepracer-import-model
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListAllMyBuckets
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketPolicy
+                  - s3:PutBucketPolicy
+                  - s3:ListBucket
+                  - s3:GetBucketAcl
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetObjectAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !Sub 'arn:aws:s3:::${DRFCUploadBucket}'
+                  - !Sub 'arn:aws:s3:::${DRFCUploadBucket}/*'
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       PackageType: Image
       Architectures:
         - x86_64
+      Environment:
+        Variables:
+          importRoleArn: !GetAtt S3ModelImportRole.Arn
       Events:
         S3Event:
           Type: S3
